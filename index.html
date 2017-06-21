@@ -81,7 +81,7 @@ $ bin/pie-factory throw --help
 $ bin/pie-factory throw -h
 $ bin/pie-factory help throw
           </code></pre>
-          <pre><code class="bash" contenteditable>
+          <pre><code class="bash fragment" contenteditable>
 usage: pie-factory throw &lt;pie&gt; &lt;target&gt; [options]
 
 Throw &lt;pie&gt; at &lt;target&gt;.  Valid values for &lt;pie&gt; are apple, 
@@ -104,7 +104,7 @@ $ bin/pie-factory recipe -h
 $ bin/pie-factory recipe
 $ bin/pie-factory help recipe
           </code></pre>
-          <pre><code class="perl" contenteditable>
+          <pre><code class="perl fragment" contenteditable>
 Subcommands for: piefactory recipe
 
 pie-factory recipe list             List pie recipes
@@ -123,9 +123,11 @@ pie-factory recipe show   &lt;recipe&gt;  Delete a recipe
             <li class="fragment">Everyone has their own opinion on what it should look like</li>
             <li class="fragment">Not every cmd line app is the same</li>
             <li class="fragment">There isn't a right or wrong way to do it</li>
-            <li class="fragment">Its hard to generate usage in a flexible/beautiful way</li>
-            <li class="fragment">I didn't try</li>
-            <li class="fragment">Its not that hard to maintain by hand</li>
+            <li class="fragment">Its a hard problem</li>
+            <li class="fragment">Its not that hard to maintain usage by hand</li>
+            <li class="fragment">So I didn't even try to solve it</li>
+            <li class="fragment">MooX::Commander doesn't generate help or usage</li>
+            <li class="fragment">Advantage of this is simplicity and flexibility</li>
           <ul>
         </section>
 
@@ -323,7 +325,7 @@ lib/PieFactory/Cmd/Recipes/Delete.pm
           <ol>
             <li class="fragment">Setup dispatch<br><code>MooX::Commander->new->dispatch(...)</code><br>&nbsp;</li>
             <li class="fragment">Parse options in cmd classes<br><code>MooX::Commander::HasOptions</code><br>&nbsp;</li>
-            <li class="fragment">Dispatch for subcommands<br><code>MooX::Commander::HasSubcommands</code><br>&nbsp;</li>
+            <li class="fragment">Setup dispatch for subcommands<br><code>MooX::Commander::HasSubcommands</code><br>&nbsp;</li>
           <ol>
         </section>
 
@@ -331,15 +333,10 @@ lib/PieFactory/Cmd/Recipes/Delete.pm
 
         <section>
           <h1>THE END</h1>
-        </section>
-
-
-
-        <section>
-          <h2>These slides are online at</h2>
+          <h4>Slides are online at</h4>
           <ul>
-            <li><a href="http://kablamo.org/slides-perl-testing">kablamo.org/slides-perl-testing</a></li>
-            <li><a href="https://github.com/kablamo/slides-perl-testing">github.com/kablamo/slides-perl-testing</a></li>
+            <li><a href="http://kablamo.org/slides-moox-commander">kablamo.org/slides-moox-commander</a></li>
+            <li><a href="https://github.com/kablamo/slides-moox-commander">github.com/kablamo/slides-moox-commander</a></li>
           </ul>
         </section>
 

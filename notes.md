@@ -1,8 +1,7 @@
 # MooX::Commander
 
-Hi my name is Eric and I am kablamo on metacpan.  I work for DuckDuckGo.  We
-are a Perl shop.  Most employees work remotely.  Its an awesome company to work
-for.  We are hiring.  
+Hi my name is Eric and I am kablamo on metacpan.  I work for DuckDuckGo.  Its
+an awesome company to work for.  We are hiring.  You should check it out.
 
 I do devops and so I end up creating a lot of command line apps.  After
 a few years of this I started having opinions about command line apps.
