@@ -44,7 +44,7 @@
 
 
         <section>
-          <h3>What you are trying to build</h3>
+          <h3>What we want to build</h3>
           <pre><code class="bash" contenteditable>
 $ bin/pie-factory --help
 $ bin/pie-factory -h
@@ -97,7 +97,7 @@ OPTIONS
 
 
         <section>
-          <h3>Help for subcommands</h3>
+          <h3>List subcommands</h3>
           <pre><code class="perl" contenteditable>
 $ bin/pie-factory recipe --help
 $ bin/pie-factory recipe -h
@@ -290,32 +290,60 @@ sub _build_options {(
 
 
         <section>
-          <h3>Dispatch for subcommands</h3>
+          <h3>Dispatch to subcommands</h3>
           <pre><code class="perl" contenteditable>
 package PieFactory::Cmd::Recipes;
 use Moo;
 with 'MooX::Commander::HasSubcommands';
-          </code></pre>
-          <pre><code class="perl fragment" contenteditable>
-usage {
-   return &lt;&lt;EOF
-Subcommands for: piefactory recipes
 
-piefactory recipe list             List pie recipes
-piefactory recipe add    &lt;recipe&gt;  Display a recipe
-piefactory recipe delete &lt;recipe&gt;  Add a recipe
-piefactory recipe show   &lt;recipe&gt;  Delete a recipe
 
-EOF
-}
           </code></pre>
-          <pre class="perl fragment" contenteditable>
-Create these classes the same way you would build any command class.
-lib/PieFactory/Cmd/Recipes/List.pm
-lib/PieFactory/Cmd/Recipes/Show.pm
-lib/PieFactory/Cmd/Recipes/Add.pm
-lib/PieFactory/Cmd/Recipes/Delete.pm
-          </pre>
+        </section>
+
+
+
+        <section>
+          <h3>Dispatch to subcommands</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Recipes;
+use Moo;
+with 'MooX::Commander::HasSubcommands';
+
+usage { "Subcommands for: piefactory recipes..." }
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Subcommand classes</h3>
+          <p>Create subcommand classes the same way you would build any command class.</p>
+        </section>
+
+
+
+        <section>
+          <h3>Help for commands and subcommands</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Help;
+use Moo;
+with 'MooX::Commander::IsaHelpCommand';
+
+
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Help for commands and subcommands</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Help;
+use Moo;
+with 'MooX::Commander::IsaHelpCommand';
+
+sub usage { "usage: pie-factory [options] [commands]..." }
+          </code></pre>
         </section>
 
 
@@ -323,9 +351,10 @@ lib/PieFactory/Cmd/Recipes/Delete.pm
         <section>
           <h3>Recap</h3>
           <ol>
-            <li class="fragment">Setup dispatch<br><code>MooX::Commander->new->dispatch(...)</code><br>&nbsp;</li>
-            <li class="fragment">Parse options in cmd classes<br><code>MooX::Commander::HasOptions</code><br>&nbsp;</li>
-            <li class="fragment">Setup dispatch for subcommands<br><code>MooX::Commander::HasSubcommands</code><br>&nbsp;</li>
+            <li class="fragment">Setup dispatch to cmd classes<br><code>MooX::Commander->new(...)->dispatch(...)</code><br>&nbsp;</li>
+            <li class="fragment">Parse options in cmd classes<br><code>with 'MooX::Commander::HasOptions'</code><br>&nbsp;</li>
+            <li class="fragment">Setup dispatch for subcommands<br><code>with 'MooX::Commander::HasSubcommands';</code><br>&nbsp;</li>
+            <li class="fragment">Create a help command<br><code>with 'MooX::Commander::IsaHelpCommand';</code><br>&nbsp;</li>
           <ol>
         </section>
 
@@ -334,10 +363,7 @@ lib/PieFactory/Cmd/Recipes/Delete.pm
         <section>
           <h1>THE END</h1>
           <h4>Slides are online at</h4>
-          <ul>
-            <li><a href="http://kablamo.org/slides-moox-commander">kablamo.org/slides-moox-commander</a></li>
-            <li><a href="https://github.com/kablamo/slides-moox-commander">github.com/kablamo/slides-moox-commander</a></li>
-          </ul>
+          <p><a href="https://github.com/kablamo/slides-moox-commander">github.com/kablamo/slides-moox-commander</a></p>
         </section>
 
 
