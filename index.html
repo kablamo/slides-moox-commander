@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Writing tests in Perl</title>
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <link rel="stylesheet" href="lib/css/black.css">
+    <script>
+      if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+      }
+    </script>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+
+
+        <section>
+          <h1>MooX::Commander</h1>
+          <h3>
+            How to build command line apps with sub commands and option parsing
+          </h3>
+          <p>
+            <a href="http://kablamo.org">Eric Johnson</a> /
+            <a href="http://twitter.com/kablamo_">@kablamo_</a>
+          </p>
+        </section>
+
+
+
+        <section>
+          <h3>What you are trying to build</h3>
+          <pre><code class="bash" contenteditable>
+$ bin/pie-factory --help
+$ bin/pie-factory -h
+$ bin/pie-factory help
+          </code></pre>
+          <pre><code class="bash fragment" contenteditable>
+usage: pie-factory [options] [commands]
+
+You have inherited a pie factory.  Use your powers wisely.
+
+COMMANDS
+pie-factory bake &lt;pie&gt;              Bake a pie
+pie-factory eat  &lt;pie&gt;              Eat a pie
+pie-factory recipe list             List pie recipes
+pie-factory recipe show   &lt;recipe&gt;  Display a recipe
+pie-factory recipe add    &lt;recipe&gt;  Add a recipe
+pie-factory recipe delete &lt;recipe&gt;  Delete a recipe
+pie-factory throw &lt;pie&gt; &lt;target&gt;    Throw a pie at something
+
+pie-factory help &lt;cmd&gt;              Get help with a command
+
+OPTIONS
+  -v, --version  Show version
+  -h, --help     Show this message
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Help for commands</h3>
+          <pre><code class="bash" contenteditable>
+$ bin/pie-factory throw --help
+$ bin/pie-factory throw -h
+$ bin/pie-factory help throw
+          </code></pre>
+          <pre><code class="bash" contenteditable>
+usage: pie-factory throw &lt;pie&gt; &lt;target&gt; [options]
+
+Throw &lt;pie&gt; at &lt;target&gt;.  Valid values for &lt;pie&gt; are apple, 
+rhubarb, or mud.
+
+OPTIONS
+    -a, --angrily  Curse the target after throwing the pie
+    -s, --speed    Throw the pie this many mph
+    -h, --help     Show this message
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Help for subcommands</h3>
+          <pre><code class="perl" contenteditable>
+$ bin/pie-factory recipe --help
+$ bin/pie-factory recipe -h
+$ bin/pie-factory recipe
+$ bin/pie-factory help recipe
+          </code></pre>
+          <pre><code class="perl" contenteditable>
+Subcommands for: piefactory recipe
+
+pie-factory recipe list             List pie recipes
+pie-factory recipe add    &lt;recipe&gt;  Display a recipe
+pie-factory recipe delete &lt;recipe&gt;  Add a recipe
+pie-factory recipe show   &lt;recipe&gt;  Delete a recipe
+
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>A note on usage or help</h3>
+          <ul>
+            <li class="fragment">Everyone has their own opinion on what it should look like</li>
+            <li class="fragment">Not every cmd line app is the same</li>
+            <li class="fragment">There isn't a right or wrong way to do it</li>
+            <li class="fragment">Its hard to generate usage in a flexible/beautiful way</li>
+            <li class="fragment">I didn't try</li>
+            <li class="fragment">Its not that hard to maintain by hand</li>
+          <ul>
+        </section>
+
+
+
+        <section>
+          <h3>Project layout</h3>
+          <pre><code contenteditable>
+~/code/pie-factory $ tree
+.
+├── bin
+│   └── pie-factory
+└── lib
+    ├── PieFactory
+    │   └── Cmd
+    │       ├── Bake.pm
+    │       ├── Eat.pm
+    │       ├── Help.pm
+    │       ├── Recipe
+    │       │   ├── Add.pm
+    │       │   ├── Delete.pm
+    │       │   ├── List.pm
+    │       │   └── Show.pm
+    │       └── Throw.pm
+    └── PieFactory.pm
+
+5 directories, 10 files
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Dispatch to command classes</h3>
+          <pre><code class="bash fragment" contenteditable>
+$ pie-factory throw rhubarb-pie Batman
+          </code></pre>
+          <pre><code class="perl fragment" contenteditable>
+# inside bin/pie-factory:
+use MooX::Commander;
+
+my $commander = MooX::Commander->new(
+    base_class   => 'PieFactory',
+    class_prefix => 'Cmd',  # optional, default value is 'Cmd'
+);
+
+$commander->dispatch(argv => \@ARGV);
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Command classes</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Throw;
+use Moo;
+
+
+sub go {
+    my ($self, $pie, $target) = @_;
+
+    # print usage and then exit unsuccessfully
+    $self-&gt;usage() unless $pie && $target;
+
+    # print "Not a valid value", 
+    # print usage, and exit unsuccessfully
+    $self-&gt;usage("Not a valid value for &lt;pie&gt;") 
+        unless $pie eq 'rhubarb-pie';
+
+
+    $self-&gt;throw($pie =&gt; $target);
+}
+
+# Print usage and exit unsuccessfully.
+sub usage { 
+    my ($self, $msg) = @_;
+    print $shift, "\n" if $msg;
+    print "usage: pie-factory throw &lt;pie&gt; &lt;target&gt; [options]...";
+    exit 1; 
+}
+
+
+
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Command classes</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Throw;
+use Moo;
+with 'MooX::Commander::HasOptions';
+
+sub go {
+    my ($self, $pie, $target) = @_;
+
+    # print usage and then exit unsuccessfully
+    $self-&gt;usage() unless $pie && $target;
+
+    # print "Not a valid value", 
+    # print usage, and exit unsuccessfully
+    $self-&gt;usage("Not a valid value for &lt;pie&gt;") 
+        unless $pie eq 'rhubarb-pie';
+
+
+    $self-&gt;throw($pie =&gt; $target);
+}
+
+# Print usage and exit unsuccessfully.
+sub usage { "usage: pie-factory throw &lt;pie&gt; &lt;target&gt; [options]..."; }
+
+
+
+
+
+
+
+
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Command classes</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Throw;
+use Moo;
+with 'MooX::Commander::HasOptions';
+
+sub go {
+    my ($self, $pie, $target) = @_;
+
+    # print usage and then exit unsuccessfully
+    $self-&gt;usage() unless $pie && $target;
+
+    # print "Not a valid value", 
+    # print usage, and exit unsuccessfully
+    $self-&gt;usage("Not a valid value for &lt;pie&gt;")
+        unless $pie eq 'rhubarb-pie';
+
+    $self-&gt;curse_loudly() if $self-&gt;options-&gt;{angrily};
+    $self-&gt;throw($pie =&gt; $target, $self-&gt;options-&gt;{speed});
+}
+
+# Print usage and exit unsuccessfully.
+sub usage { "usage: pie-factory throw &lt;pie&gt; &lt;target&gt; [options]..." }
+
+# This array is used to configure Getopt::Long
+sub _build_options {(
+    'angrily|a',
+    'speed|s=i',
+)}
+          </code></pre>
+        </section>
+
+
+
+        <section>
+          <h3>Dispatch for subcommands</h3>
+          <pre><code class="perl" contenteditable>
+package PieFactory::Cmd::Recipes;
+use Moo;
+with 'MooX::Commander::HasSubcommands';
+          </code></pre>
+          <pre><code class="perl fragment" contenteditable>
+usage {
+   return &lt;&lt;EOF
+Subcommands for: piefactory recipes
+
+piefactory recipe list             List pie recipes
+piefactory recipe add    &lt;recipe&gt;  Display a recipe
+piefactory recipe delete &lt;recipe&gt;  Add a recipe
+piefactory recipe show   &lt;recipe&gt;  Delete a recipe
+
+EOF
+}
+          </code></pre>
+          <pre class="perl fragment" contenteditable>
+Create these classes the same way you would build any command class.
+lib/PieFactory/Cmd/Recipes/List.pm
+lib/PieFactory/Cmd/Recipes/Show.pm
+lib/PieFactory/Cmd/Recipes/Add.pm
+lib/PieFactory/Cmd/Recipes/Delete.pm
+          </pre>
+        </section>
+
+
+
+        <section>
+          <h3>Recap</h3>
+          <ol>
+            <li class="fragment">Setup dispatch<br><code>MooX::Commander->new->dispatch(...)</code><br>&nbsp;</li>
+            <li class="fragment">Parse options in cmd classes<br><code>MooX::Commander::HasOptions</code><br>&nbsp;</li>
+            <li class="fragment">Dispatch for subcommands<br><code>MooX::Commander::HasSubcommands</code><br>&nbsp;</li>
+          <ol>
+        </section>
+
+
+
+        <section>
+          <h1>THE END</h1>
+        </section>
+
+
+
+        <section>
+          <h2>These slides are online at</h2>
+          <ul>
+            <li><a href="http://kablamo.org/slides-perl-testing">kablamo.org/slides-perl-testing</a></li>
+            <li><a href="https://github.com/kablamo/slides-perl-testing">github.com/kablamo/slides-perl-testing</a></li>
+          </ul>
+        </section>
+
+
+
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+    <script>
+      Reveal.initialize({
+        //width:      1200, // default is 960
+        //height:     1200,  // default is 700
+        //margin:        0,
+        controls:   true,
+        progress:   true,
+        history:    true,
+        center:     true,
+        theme:      Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: 'none', // default/cube/page/concave/zoom/linear/fade/none
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+    </script>
+  </body>
+</html>
